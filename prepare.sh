@@ -11,7 +11,7 @@ prepare_ver=$1
 [ -z "$prepare_ver" ] && echo Please specify the version to be prepared for distribution && exit 1
 [ -z "$GOPATH" ] && echo GOPATH is not set && exit 1
 
-rm -rf $GOPATH/pkg $GOPATH/bin $GOPATH/src/github.com/HouzuoGuo/tiedot/tiedot
+rm -rf ./src/* $GOPATH/pkg $GOPATH/bin $GOPATH/src/github.com/HouzuoGuo/tiedot/tiedot 
 pushd $GOPATH/src/github.com/HouzuoGuo/tiedot
 git checkout master && git pull && git checkout $prepare_ver
 go clean && go get
