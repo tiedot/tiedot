@@ -1,10 +1,8 @@
-/* Run tiedot HTTP API server, benchmarks, or embedded usage example. */
+// Run tiedot HTTP API server, benchmarks, or embedded usage example.
 package main
 
 import (
 	"flag"
-	"github.com/HouzuoGuo/tiedot/httpapi"
-	"github.com/HouzuoGuo/tiedot/tdlog"
 	"io/ioutil"
 	"os"
 	"os/signal"
@@ -12,6 +10,9 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
+
+	"github.com/HouzuoGuo/tiedot/httpapi"
+	"github.com/HouzuoGuo/tiedot/tdlog"
 )
 
 // Read Linux system VM parameters and print performance configuration advice when necessary.
@@ -27,20 +28,20 @@ func linuxPerfAdvice() {
 	swappiness, err := readFileIntContent("/proc/sys/vm/swappiness")
 	if err != nil {
 		tdlog.Notice("Non-fatal - unable to offer performance advice based on vm.swappiness.")
-	} else if swappiness > 50 {
-		tdlog.Noticef("System vm.swappiness is very high (%d), for optimium performance please lower it to below 50.", swappiness)
+	} else if swappiness > 30 {
+		tdlog.Noticef("System vm.swappiness is very high (%d), for optimium performance please lower it below 30.", swappiness)
 	}
 	dirtyRatio, err := readFileIntContent("/proc/sys/vm/dirty_ratio")
 	if err != nil {
 		tdlog.Notice("Non-fatal - unable to offer performance advice based on vm.dirty_ratio.")
 	} else if dirtyRatio < 50 {
-		tdlog.Noticef("System vm.dirty_ratio is very low (%d), for optimium performance please increase it to above 50.", dirtyRatio)
+		tdlog.Noticef("System vm.dirty_ratio is very low (%d), for optimium performance please raise it above 50.", dirtyRatio)
 	}
 	dirtyBGRatio, err := readFileIntContent("/proc/sys/vm/dirty_background_ratio")
 	if err != nil {
 		tdlog.Notice("Non-fatal - unable to offer performance advice based on vm.dirty_background_ratio.")
-	} else if dirtyBGRatio < 50 {
-		tdlog.Noticef("System vm.dirty_background_ratio is very low (%d), for optimium performance please increase it to above 50.", dirtyBGRatio)
+	} else if dirtyBGRatio > 20 {
+		tdlog.Noticef("System vm.dirty_background_ratio is very high (%d), for optimium performance please lower it below 20.", dirtyBGRatio)
 	}
 }
 
@@ -56,7 +57,7 @@ func main() {
 	// General params
 	var mode string
 	var maxprocs int
-	flag.StringVar(&mode, "mode", "", "[httpd|bench|bench2|example]")
+	flag.StringVar(&mode, "mode", "", "Mandatory - specify the execution mode [httpd|bench|bench2|example]")
 	flag.IntVar(&maxprocs, "gomaxprocs", defaultMaxprocs, "GOMAXPROCS")
 	// Debug params
 	var profile, debug bool
@@ -65,12 +66,16 @@ func main() {
 	flag.BoolVar(&debug, "debug", false, "Dump goroutine stack traces upon receiving interrupt signal")
 	// HTTP mode params
 	var dir string
+	var bind string
 	var port int
+	var authToken string
 	var tlsCrt, tlsKey string
 	flag.StringVar(&dir, "dir", "", "(HTTP server) database directory")
+	flag.StringVar(&bind, "bind", "", "(HTTP server) bind to IP address (all network interfaces by default)")
 	flag.IntVar(&port, "port", 8080, "(HTTP server) port number")
 	flag.StringVar(&tlsCrt, "tlscrt", "", "(HTTP server) TLS certificate (empty to disable TLS).")
 	flag.StringVar(&tlsKey, "tlskey", "", "(HTTP server) TLS certificate key (empty to disable TLS).")
+	flag.StringVar(&authToken, "authtoken", "", "(HTTP server) Only authorize requests carrying this token in 'Authorization: token TOKEN' header. (empty to disable)")
 
 	// HTTP + JWT params
 	var jwtPubKey, jwtPrivateKey string
@@ -114,7 +119,7 @@ func main() {
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
 		go func() {
-			for _ = range c {
+			for range c {
 				pprof.Lookup("goroutine").WriteTo(os.Stderr, 1)
 			}
 		}()
@@ -139,7 +144,7 @@ func main() {
 			tdlog.Notice("To enable JWT, please specify RSA private and public key.")
 			os.Exit(1)
 		}
-		httpapi.Start(dir, port, tlsCrt, tlsKey, jwtPubKey, jwtPrivateKey)
+		httpapi.Start(dir, port, tlsCrt, tlsKey, jwtPubKey, jwtPrivateKey, bind, authToken)
 	case "example":
 		// Run embedded usage examples
 		embeddedExample()

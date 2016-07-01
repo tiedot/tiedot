@@ -3,7 +3,9 @@
 I sincerely appreciate the following individuals and organizations for their contribution to the tiedot project (in numeric-alphabetical order):
 
 - 2pi
+- Adrian Lanzafame
 - Alexandre Stein
+- Allendar
 - Bryce Nyeggen
 - Cristian Echeverria
 - David Corona
@@ -12,21 +14,26 @@ I sincerely appreciate the following individuals and organizations for their con
 - Freiheit.com
 - Gert Cuykens
 - "IFQ"
+- Mauro Toffanin
 - Nick Prestra
 - NoahShen
 - Omeid
 - Osman Bineev
 - Ross Albertson
 - Stefan Richter
+- Thiago Jackiw
 - Tom D
 - Xin Wang "TonyW"
+- zhibinr
 
 And thanks everyone (and You) for watching/starring/forking and evaluating tiedot!
 
 ## License
 
+tiedot uses 2-clause-BSD license:
+
 <pre>
-Copyright (c) 2014, Contributors and Howard Guo
+Copyright (c) 2016, Contributors and Howard Guo
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:

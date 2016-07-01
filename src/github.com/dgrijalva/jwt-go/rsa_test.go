@@ -45,7 +45,8 @@ var rsaTestData = []struct {
 }
 
 func TestRSAVerify(t *testing.T) {
-	key, _ := ioutil.ReadFile("test/sample_key.pub")
+	keyData, _ := ioutil.ReadFile("test/sample_key.pub")
+	key, _ := jwt.ParseRSAPublicKeyFromPEM(keyData)
 
 	for _, data := range rsaTestData {
 		parts := strings.Split(data.tokenString, ".")
@@ -62,7 +63,8 @@ func TestRSAVerify(t *testing.T) {
 }
 
 func TestRSASign(t *testing.T) {
-	key, _ := ioutil.ReadFile("test/sample_key")
+	keyData, _ := ioutil.ReadFile("test/sample_key")
+	key, _ := jwt.ParseRSAPrivateKeyFromPEM(keyData)
 
 	for _, data := range rsaTestData {
 		if data.valid {
@@ -141,4 +143,34 @@ func TestRSAKeyParsing(t *testing.T) {
 		t.Errorf("Parsed invalid key as valid private key: %v", k)
 	}
 
+}
+
+func BenchmarkRS256Signing(b *testing.B) {
+	key, _ := ioutil.ReadFile("test/sample_key")
+	parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(key)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkSigning(b, jwt.SigningMethodRS256, parsedKey)
+}
+
+func BenchmarkRS384Signing(b *testing.B) {
+	key, _ := ioutil.ReadFile("test/sample_key")
+	parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(key)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkSigning(b, jwt.SigningMethodRS384, parsedKey)
+}
+
+func BenchmarkRS512Signing(b *testing.B) {
+	key, _ := ioutil.ReadFile("test/sample_key")
+	parsedKey, err := jwt.ParseRSAPrivateKeyFromPEM(key)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkSigning(b, jwt.SigningMethodRS512, parsedKey)
 }
